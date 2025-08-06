@@ -9,4 +9,4 @@ Data Structures
 
 Path
 ====
-.. automodule:: autils.path
+.. automodule:: autils.file.path
