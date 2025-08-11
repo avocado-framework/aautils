@@ -78,6 +78,9 @@ disable=line-too-long,
   fixme,
   too-many-public-methods,
   invalid-name,
+  protected-access,
+  too-many-lines,
+  no-self-use
 
 
 [REPORTS]
