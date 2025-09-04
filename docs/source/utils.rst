@@ -16,8 +16,13 @@ Ports
 -----
 .. automodule:: autils.network.ports
 
+
+Output
+======
+.. automodule:: autils.utils.output
+
 File
-====
+=======
 
 Path
 ----

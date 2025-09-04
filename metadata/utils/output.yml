@@ -1,0 +1,17 @@
+name: output
+description: Utility functions for user friendly display of information, including data size formatting and progress bars
+
+categories:
+  - Development
+  - Misc
+maintainers:
+  - name: Harvey James Lynden
+    email: hlynden@redhat.com
+    github_usr_name: harvey0100
+supported_platforms:
+  - CentOS Stream 9
+  - Fedora 36
+  - Fedora 37
+tests:
+  - tests/modules/utils/output.py
+remote: false
