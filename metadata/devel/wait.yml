@@ -1,0 +1,17 @@
+name: wait
+description: Wait for a function to return a truthy value or timeout
+
+categories:
+  - Development
+maintainers:
+  - name: Harvey James Lynden
+    email: hlynden@redhat.com
+    github_usr_name: harvey0100
+supported_platforms:
+  - CentOS Stream 9
+  - Fedora 36
+  - Fedora 37
+tests:
+  - tests/unit/modules/devel/wait.py
+  - tests/functional/modules/devel/wait.py
+remote: false
