@@ -38,3 +38,7 @@ GDB
 Output
 ------
 .. automodule:: autils.devel.output
+
+Wait
+----
+.. automodule:: autils.devel.wait
