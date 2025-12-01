@@ -39,6 +39,10 @@ Output
 ------
 .. automodule:: autils.devel.output
 
+Process
+-------
+.. automodule:: autils.devel.process
+
 Script
 ------
 .. automodule:: autils.devel.script
