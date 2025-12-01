@@ -1,0 +1,19 @@
+name: script
+description: Module to handle script file creation and management
+
+categories:
+  - Development
+  - Misc
+maintainers:
+  - name: Harvey James Lynden
+    email: hlynden@redhat.com
+    github_usr_name: harvey0100
+supported_platforms:
+  - CentOS Stream 9
+  - Fedora 36
+  - Fedora 37
+tests:
+  - tests/unit/modules/devel/script.py
+  - tests/functional/modules/devel/script.py
+remote: false
+
