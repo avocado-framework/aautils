@@ -569,14 +569,14 @@ class MiscProcessTests(unittest.TestCase):
         system_mock.return_value = 0
         self.assertTrue(process.can_sudo("ls -l"))
 
-    @unittest.mock.patch("autils.devel.process.system")
+    @unittest.mock.patch("autils.devel.process.getoutput")
     @unittest.mock.patch("autils.file.path.find_command")
     @unittest.mock.patch("autils.devel.process.os.getuid")
-    def test_can_sudo_oserror(self, getuid_mock, find_cmd_mock, system_mock):
+    def test_can_sudo_oserror(self, getuid_mock, find_cmd_mock, getoutput_mock):
         """Test can_sudo when OSError occurs"""
         getuid_mock.return_value = 1000
         find_cmd_mock.return_value = "/usr/bin/sudo"
-        system_mock.side_effect = OSError()
+        getoutput_mock.side_effect = OSError()
         self.assertFalse(process.can_sudo())
 
     @unittest.mock.patch("autils.devel.process.get_capabilities")
