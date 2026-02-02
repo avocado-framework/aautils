@@ -16,6 +16,12 @@ Ports
 -----
 .. automodule:: autils.network.ports
 
+Hypervisor
+==========
+
+Qemu
+----
+.. automodule:: autils.hypervisor.qemu
 
 File
 =======

@@ -1,0 +1,17 @@
+name: qemu
+description: Module for qemu option related helper functions
+
+categories:
+  - Virtualization
+maintainers:
+  - name: Yongxue Hong
+    email: yhong@redhat.com
+    github_usr_name: YongxueHong
+supported_platforms:
+  - CentOS Stream 9
+  - Fedora 36
+  - Fedora 37
+tests:
+  - tests/unit/modules/hypervisor/qemu.py
+  - tests/functional/modules/hypervisor/qemu.py
+remote: false
