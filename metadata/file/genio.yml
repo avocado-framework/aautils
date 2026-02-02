@@ -1,0 +1,18 @@
+name: genio
+description: Generic IO module for file read/write operations.
+
+categories:
+  - Files
+  - IO
+maintainers:
+  - name: Harvey James Lynden
+    email: hlynden@redhat.com
+    github_usr_name: harvey0100
+supported_platforms:
+  - CentOS Stream 9
+  - Fedora 36
+  - Fedora 37
+tests:
+  - tests/unit/modules/file/genio.py
+  - tests/functional/modules/file/genio.py
+remote: false
