@@ -1,0 +1,18 @@
+name: ovs
+description: Module for Open vSwitch related functions
+
+categories:
+  - Network
+  - Virtualization
+maintainers:
+  - name: Houqi Zuo
+    email: hzuo@redhat.com
+    github_usr_name: nickzhq
+supported_platforms:
+  - CentOS Stream 9
+  - Fedora 36
+  - Fedora 37
+tests:
+  - tests/unit/modules/network/drivers/ovs.py
+  - tests/functional/modules/network/drivers/ovs.py
+remote: false
