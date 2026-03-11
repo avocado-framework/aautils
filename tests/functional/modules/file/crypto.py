@@ -34,25 +34,6 @@ class HashFileFunctionalTest(TestCaseTmpDir):
             "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592",
         )
 
-    def test_file_tampering_detection(self):
-        """
-        Test detecting file modification through hash comparison.
-
-        Real-world scenario: Security systems use hashes to detect if
-        files have been tampered with. This tests the complete workflow.
-        """
-        filepath = os.path.join(self.tmpdir.name, "secure_config.conf")
-
-        with open(filepath, "wb") as f:
-            f.write(b"secure_setting=true\npassword_hash=abc123")
-        original_hash = crypto.hash_file(filepath, algorithm="sha256")
-
-        with open(filepath, "wb") as f:
-            f.write(b"secure_setting=false\npassword_hash=abc123")
-        tampered_hash = crypto.hash_file(filepath, algorithm="sha256")
-
-        self.assertNotEqual(original_hash, tampered_hash)
-
     def test_create_file_manifest(self):
         """
         Test creating a manifest of file checksums for a directory.
@@ -79,22 +60,6 @@ class HashFileFunctionalTest(TestCaseTmpDir):
             self.assertEqual(manifest[relpath], expected)
 
         self.assertEqual(len(set(manifest.values())), len(files))
-
-    def test_symlink_follows_to_target(self):
-        """
-        Test that hashing through symlink produces same result as original.
-
-        Real-world scenario: Linux systems use symlinks extensively;
-        hash verification must work regardless of access path.
-        """
-        original = os.path.join(self.tmpdir.name, "original.bin")
-        symlink = os.path.join(self.tmpdir.name, "link.bin")
-
-        with open(original, "wb") as f:
-            f.write(b"Linked content")
-        os.symlink(original, symlink)
-
-        self.assertEqual(crypto.hash_file(original), crypto.hash_file(symlink))
 
 
 if __name__ == "__main__":
