@@ -20,6 +20,10 @@ Ports
 File
 =======
 
+Crypto
+------
+.. automodule:: autils.file.crypto
+
 Path
 ----
 .. automodule:: autils.file.path
