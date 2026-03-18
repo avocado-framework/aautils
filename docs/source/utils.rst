@@ -24,6 +24,10 @@ Crypto
 ------
 .. automodule:: autils.file.crypto
 
+Genio
+-----
+.. automodule:: autils.file.genio
+
 Path
 ----
 .. automodule:: autils.file.path
