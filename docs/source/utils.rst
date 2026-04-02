@@ -16,6 +16,13 @@ Ports
 -----
 .. automodule:: autils.network.ports
 
+System
+======
+
+CPU
+---
+.. automodule:: autils.system.cpu
+
 
 File
 =======
