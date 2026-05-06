@@ -1,0 +1,17 @@
+name: cpu
+description: Utilities for querying and managing CPU information on the current machine
+
+categories:
+  - OS
+  - Misc
+maintainers:
+  - name: Harvey James Lynden
+    email: hlynden@redhat.com
+    github_usr_name: harvey0100
+supported_platforms:
+  - CentOS Stream 9
+  - Fedora 36
+  - Fedora 37
+tests:
+  - tests/unit/modules/system/cpu.py
+remote: false
