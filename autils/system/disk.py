@@ -19,9 +19,7 @@
 #         : Naresh Bannoth <nbannoth@linux.vnet.ibm.com>
 
 
-"""
-Disk utilities
-"""
+"""Disk utilities."""
 
 
 import json
@@ -38,25 +36,37 @@ LOGGER = logging.getLogger(__name__)
 
 
 class DiskError(Exception):
-    """
-    Generic DiskError
-    """
+    """Generic DiskError."""
 
 
 def freespace(path):
+    """Return available free space for a path.
+
+    :param path: filesystem path to inspect
+    :type path: str
+
+    :return: free space in bytes
+    :rtype: int
+    """
     fs_stats = os.statvfs(path)
     return fs_stats.f_bsize * fs_stats.f_bavail
 
 
 def get_disk_blocksize(path):
-    """Return the disk block size, in bytes"""
+    """Return the disk block size.
+
+    :param path: filesystem path to inspect
+    :type path: str
+
+    :return: disk block size, in bytes
+    :rtype: int
+    """
     fs_stats = os.statvfs(path)
     return fs_stats.f_bsize
 
 
 def create_loop_device(size, blocksize=4096, directory="./"):
-    """
-    Creates a loop device of size and blocksize specified.
+    """Create a loop device of the specified size and blocksize.
 
     :param size: Size of loop device, in bytes
     :type size: int
@@ -68,6 +78,7 @@ def create_loop_device(size, blocksize=4096, directory="./"):
 
     :return: loop device name
     :rtype: str
+    :raises DiskError: if the backing file or loop device cannot be created
     """
     cmd = "losetup --find"
     loop = process.run(cmd, ignore_status=True, sudo=True).stdout_text.strip("\n")
@@ -87,14 +98,14 @@ def create_loop_device(size, blocksize=4096, directory="./"):
 
 
 def delete_loop_device(device):
-    """
-    Deletes the specified loop device.
+    """Delete the specified loop device.
 
     :param device: device to be deleted
     :type device: str
 
     :return: True if deleted.
     :rtype: bool
+    :raises DiskError: if the loop device cannot be found or deleted
     """
     cmd = "losetup -aJl"
     loop_dic = json.loads(process.run(cmd, ignore_status=True, sudo=True).stdout_text)
@@ -112,8 +123,7 @@ def delete_loop_device(device):
 
 
 def get_disks():
-    """
-    Returns the physical "hard drives" available on this system
+    """Return the physical "hard drives" available on this system.
 
     This is a simple wrapper around `lsblk` and will return all the
     top level physical (non-virtual) devices return by it.
@@ -122,7 +132,8 @@ def get_disks():
     platforms is desirable and may be implemented in the future.
 
     :returns: a list of paths to the physical disks on the system
-    :rtype: list of str
+    :rtype: list[str]
+    :raises DiskError: if disk discovery or JSON parsing fails
     """
     try:
         json_result = process.run("lsblk --json --paths --inverse")
@@ -142,15 +153,14 @@ def get_disks():
 
 
 def get_all_disk_paths():
-    """
-    Returns all available disk names and alias on this  system
+    """Return all available disk names and aliases on this system.
 
     This will get all the sysfs disks name entries by its device
     node name, by-uuid, by-id and by-path, irrespective of any
     platform and device type
 
     :returns: a list of all disk path names
-    :rtype: list of str
+    :rtype: list[str]
     """
     disk_list = []
     for path in [
@@ -171,8 +181,7 @@ def get_all_disk_paths():
 
 
 def get_absolute_disk_path(device):
-    """
-    Returns absolute device path of given disk
+    """Return absolute device path of given disk.
 
     This will get actual disks path of given device, it can take
     node name, by-uuid, by-id and by-path, irrespective of any
@@ -182,7 +191,7 @@ def get_absolute_disk_path(device):
     :type device: str
 
     :returns: the device absolute path name
-    :rtype: bool
+    :rtype: str
     """
     if not os.path.exists(device):
         for dev_path in get_all_disk_paths():
@@ -192,11 +201,10 @@ def get_absolute_disk_path(device):
 
 
 def get_available_filesystems():
-    """
-    Return a list of all available filesystem types
+    """Return a list of all available filesystem types.
 
     :returns: a list of filesystem types
-    :rtype: list of str
+    :rtype: list[str]
     """
     filesystems = set()
     with open("/proc/filesystems") as proc_fs:  # pylint: disable=W1514
@@ -206,8 +214,8 @@ def get_available_filesystems():
 
 
 def get_filesystem_type(mount_point="/"):
-    """
-    Returns the type of the filesystem of mount point informed.
+    """Return the filesystem type for the informed mount point.
+
     The default mount point considered when none is informed
     is the root "/" mount point.
 
@@ -226,13 +234,14 @@ def get_filesystem_type(mount_point="/"):
 
 
 def is_root_device(device):
-    """
-    check for root disk
+    """Check for root disk.
 
     :param device: device to check
+    :type device: str
 
     :returns: True or False, True if given device is root disk
               otherwise will return False.
+    :rtype: bool
     """
     cmd = "lsblk --j -o MOUNTPOINT,PKNAME"
     output = process.run(cmd)
@@ -244,8 +253,7 @@ def is_root_device(device):
 
 
 def is_disk_mounted(device):
-    """
-    check if given disk is mounted or not
+    """Check if given disk is mounted or not.
 
     :param device: disk/device name
     :type device: str
@@ -262,13 +270,12 @@ def is_disk_mounted(device):
 
 
 def is_dir_mounted(dir_path):
-    """
-    check if given directory is mounted or not
+    """Check if given directory is mounted or not.
 
     :param dir_path: directory path
     :type dir_path: str
 
-    :returns: True if the given director is mounted else False
+    :returns: True if the given directory is mounted else False
     :rtype: bool
     """
     with open("/proc/mounts") as mounts:  # pylint: disable=W1514
@@ -280,13 +287,12 @@ def is_dir_mounted(dir_path):
 
 
 def fs_exists(device):
-    """
-    check if filesystem exists on give disk/device
+    """Check if filesystem exists on given disk/device.
 
     :param device: disk/device name
     :type device: str
 
-    :returns: returns True if filesystem exists on the give disk else False
+    :returns: returns True if filesystem exists on the given disk else False
     :rtype: bool
     """
     cmd = f"blkid -o value -s TYPE {device}"
@@ -298,8 +304,7 @@ def fs_exists(device):
 
 
 def get_dir_mountpoint(dir_path):
-    """
-    get mounted disk name that is mounted on given dir_path
+    """Get mounted disk name that is mounted on given dir_path.
 
     :param dir_path: absolute directory path
     :type dir_path: str
@@ -316,8 +321,7 @@ def get_dir_mountpoint(dir_path):
 
 
 def get_disk_mountpoint(device):
-    """
-    get mountpoint on which given disk is mounted
+    """Get mountpoint on which given disk is mounted.
 
     :param device: disk/device name
     :type device: str
@@ -334,8 +338,7 @@ def get_disk_mountpoint(device):
 
 
 def create_linux_raw_partition(disk_name, size=None, num_of_par=1):
-    """
-    Creates partitions using sfdisk command
+    """Create partitions using sfdisk command.
 
     :param disk_name: disk/device name
     :type disk_name: str
@@ -344,7 +347,9 @@ def create_linux_raw_partition(disk_name, size=None, num_of_par=1):
     :param num_of_par: Number of partitions to be created
     :type num_of_par: int
 
-    Returns list of created partitions
+    :return: list of created partitions, or None if partitioning did not change
+    :rtype: list[str] or None
+    :raises DiskError: if creating partitions fails
     """
     if not size:
         size = get_size_of_disk(disk_name) / 1073741824
@@ -375,23 +380,24 @@ def create_linux_raw_partition(disk_name, size=None, num_of_par=1):
 
 
 def get_size_of_disk(disk):
-    """
-    Returns size of disk in bytes
+    """Return size of disk in bytes.
 
     :param disk: disk/device name
     :type disk: str
 
-    Return Type: int
+    :return: size of disk in bytes
+    :rtype: int
     """
     return int(process.getoutput("lsblk -b --output SIZE -n -d " + disk))
 
 
 def delete_partition(partition_name):
-    """
-    Deletes mentioned partition from disk
+    """Delete mentioned partition from disk.
 
     :param partition_name: partition absolute path
     :type partition_name: str
+
+    :raises DiskError: if deleting the partition fails
     """
     disk_index = re.search(r"\d+", partition_name).start()
     try:
@@ -408,8 +414,7 @@ def delete_partition(partition_name):
 
 
 def clean_disk(disk_name):
-    """
-    Cleans partitions table of a disk
+    """Clean partitions table of a disk.
 
     :param disk_name: disk name
     :type disk_name: str
@@ -422,8 +427,7 @@ def clean_disk(disk_name):
 
 
 def rescan_disk(disk_name):
-    """
-    Re-scans disk
+    """Re-scan disk.
 
     :param disk_name: disk name
     :type disk_name: str
@@ -441,13 +445,13 @@ def rescan_disk(disk_name):
 
 
 def get_disk_partitions(disk):
-    """
-    Returns partitions of a disk excluding extended partition
+    """Return partitions of a disk excluding extended partition.
 
     :param disk: disk name
     :type disk: str
 
-    Returns array with all partitions of disk
+    :return: all non-extended partitions of disk
+    :rtype: list[str]
     """
     rescan_disk(disk)
     partitions_op = process.getoutput("sfdisk -l " + disk)
@@ -459,21 +463,26 @@ def get_disk_partitions(disk):
 
 
 def get_io_scheduler_list(device_name):
-    """
-    Returns io scheduler available for the IO Device
+    """Return IO schedulers available for the IO device.
+
     :param device_name: Device  name example like sda
+    :type device_name: str
+
     :return: list of IO scheduler
+    :rtype: list[str]
     """
     with open(__sched_path(device_name), "r", encoding="utf-8") as fl:
         return fl.read().translate(str.maketrans("[]", " ")).split()
 
 
 def get_io_scheduler(device_name):
-    """
-    Return io scheduler name which is set currently  for device
+    """Return the IO scheduler currently set for device.
+
     :param device_name: Device  name example like sda
+    :type device_name: str
+
     :return: IO scheduler
-    :rtype :  str
+    :rtype: str
     """
     return re.split(
         r"[\[\]]", open(__sched_path(device_name), "r", encoding="utf-8").read()
@@ -487,10 +496,14 @@ def __sched_path(device_name):
 
 
 def set_io_scheduler(device_name, name):
-    """
-    Set io scheduler to a device
+    """Set IO scheduler to a device.
+
     :param device_name:  Device  name example like sda
+    :type device_name: str
     :param name: io scheduler name
+    :type name: str
+
+    :raises DiskError: if the IO scheduler is not available for the device
     """
     if name not in get_io_scheduler_list(device_name):
         raise DiskError(f"No such IO scheduler: {name}")
