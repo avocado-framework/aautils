@@ -1,6 +1,7 @@
 import unittest.mock
 
-from avocado.utils import disk, process
+from autils.devel import process
+from autils.system import disk
 
 LSBLK_OUTPUT = b"""
 {
@@ -40,7 +41,7 @@ class Disk(unittest.TestCase):
             command="lsblk --json --paths --inverse", stdout=b'{"blockdevices": []}'
         )
         with unittest.mock.patch(
-            "avocado.utils.disk.process.run", return_value=mock_result
+            "autils.system.disk.process.run", return_value=mock_result
         ):
             self.assertEqual(disk.get_disks(), [])
 
@@ -49,7 +50,7 @@ class Disk(unittest.TestCase):
             command="lsblk --json --paths --inverse", stdout=LSBLK_OUTPUT
         )
         with unittest.mock.patch(
-            "avocado.utils.disk.process.run", return_value=mock_result
+            "autils.system.disk.process.run", return_value=mock_result
         ):
             expected_diskname = [
                 "/dev/vda",

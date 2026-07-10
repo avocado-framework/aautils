@@ -29,7 +29,10 @@ import logging
 import os
 import re
 
-from avocado.utils import genio, multipath, process
+from avocado.utils import multipath
+
+from autils.devel import process
+from autils.file import genio
 
 LOGGER = logging.getLogger(__name__)
 
