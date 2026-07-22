@@ -23,6 +23,10 @@ CPU
 ---
 .. automodule:: autils.system.cpu
 
+Disk
+---
+.. automodule:: autils.system.disk
+
 
 File
 =======
