@@ -54,6 +54,10 @@ GDB
 ---
 .. automodule:: autils.devel.gdb
 
+LKP
+---
+.. automodule:: autils.devel.lkp
+
 Output
 ------
 .. automodule:: autils.devel.output
