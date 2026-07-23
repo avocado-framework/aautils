@@ -12,8 +12,8 @@
 # Copyright: 2026 Advanced Micro Devices, Inc.
 # Author: Sumit Kumar <sumitkum@amd.com>
 
-"""
-Framework-independent helpers to drive Intel LKP (lkp-tests) microbenchmarks.
+"""Framework-independent helpers to drive Intel LKP (lkp-tests) microbenchmarks.
+
 The public surface is :func:`clone`, :func:`install`, :func:`install_job`,
 :func:`run_job`, :func:`find_result_file` and :func:`archive_results`. Package
 installation and result assertions belong in the test that uses them.
@@ -49,10 +49,10 @@ DEBIAN_FRONTEND=noninteractive apt-get -y install $available
 
 
 def _make_installer_tolerant(lkp_dir):
-    """
-    Make the cloned lkp-tests apt installer skip unavailable packages.
+    """Make the cloned lkp-tests apt installer skip unavailable packages.
 
     :param lkp_dir: path to the lkp-tests checkout.
+    :type lkp_dir: str
     """
     for distro in ("ubuntu", "debian"):
         path = os.path.join(lkp_dir, "distro", "installer", distro)
@@ -65,42 +65,47 @@ def _make_installer_tolerant(lkp_dir):
 
 def _run(
     cmd, cwd, sudo=False, ignore_status=False, timeout=None, env=None, auto_answer=False
-):
-    """
-    Compose and run a single shell command from ``cwd``.
+):  # pylint: disable=too-many-arguments
+    """Compose and run a single shell command from ``cwd``.
 
     The command is composed as ``cd <cwd> [&& export ...] && [yes |] <cmd>``
     and run via :func:`process.run` with ``shell=True``.
 
     :param cmd: the command to run (already quoted as needed).
+    :type cmd: str
     :param cwd: directory to ``cd`` into before running ``cmd``.
+    :type cwd: str
     :param sudo: run the composed command with elevated privileges.
+    :type sudo: bool
     :param ignore_status: when True, do not raise on a non-zero exit status;
                           the caller inspects :attr:`CmdResult.exit_status`.
+    :type ignore_status: bool
     :param timeout: timeout in seconds passed through to :func:`process.run`.
+    :type timeout: int or None
     :param env: optional mapping of environment variables.
+    :type env: dict or None
     :param auto_answer: when True, pipe ``yes`` into the command to answer
                         interactive prompts. Use this only for steps that
                         are known to prompt (package install / build), never
                         for long-running benchmark runs which would otherwise
                         receive an endless stdin stream and may hang.
+    :type auto_answer: bool
     :returns: the :class:`process.CmdResult` of the run.
+    :rtype: process.CmdResult
     """
-    parts = ["cd %s" % shlex.quote(cwd)]
+    parts = [f"cd {shlex.quote(cwd)}"]
     if env:
         # Export inside the shell, not via process.run(env=...), so the vars
         # survive the ``sudo`` wrapper and reach every stage of the pipeline.
-        exports = " ".join(
-            "%s=%s" % (key, shlex.quote(str(val))) for key, val in env.items()
-        )
-        parts.append("export %s" % exports)
-    parts.append(("yes | %s" % cmd) if auto_answer else cmd)
+        exports = " ".join(f"{key}={shlex.quote(str(val))}" for key, val in env.items())
+        parts.append(f"export {exports}")
+    parts.append(f"yes | {cmd}" if auto_answer else cmd)
     full = " && ".join(parts)
     # process.run(sudo=True) only prepends ``sudo`` to the first token, so with
     # a ``cd ... && ...`` pipeline only the ``cd`` would be privileged. Wrap the
     # whole pipeline in ``sudo -n sh -c`` so every stage runs elevated.
-    if sudo and hasattr(os, "getuid") and os.getuid() != 0:
-        full = "sudo -n sh -c %s" % shlex.quote(full)
+    if sudo and hasattr(os, "getuid") and os.getuid():
+        full = f"sudo -n sh -c {shlex.quote(full)}"
         sudo = False
     return process.run(
         full, shell=True, sudo=sudo, ignore_status=ignore_status, timeout=timeout
@@ -108,31 +113,35 @@ def _run(
 
 
 def _ensure_testbox(lkp_dir, testbox):
-    """
-    Create a minimal ``hosts/<testbox>`` description if absent.
+    """Create a minimal ``hosts/<testbox>`` description if absent.
 
     :param lkp_dir: path to the lkp-tests checkout.
+    :type lkp_dir: str
     :param testbox: testbox name to validate and describe.
+    :type testbox: str
     :raises ValueError: if ``testbox`` contains path traversal characters.
     """
     if ".." in testbox or "/" in testbox or "\\" in testbox:
-        raise ValueError("Invalid testbox name: %s" % testbox)
+        raise ValueError(f"Invalid testbox name: {testbox}")
     host = os.path.join(lkp_dir, "hosts", testbox)
     if os.path.isfile(host):
         return
     os.makedirs(os.path.dirname(host), exist_ok=True)
     with open(host, "w", encoding="utf-8") as handle:
-        handle.write("nr_cpu: %d\n" % (os.cpu_count() or 1))
+        handle.write(f"nr_cpu: {os.cpu_count() or 1}\n")
 
 
 def clone(uri, dest, branch="master"):
-    """
-    Clone (or reuse) the lkp-tests repository at ``dest``.
+    """Clone (or reuse) the lkp-tests repository at ``dest``.
 
     :param uri: git URL of the lkp-tests repository.
+    :type uri: str
     :param dest: destination directory for the checkout.
+    :type dest: str
     :param branch: remote branch to fetch.
+    :type branch: str
     :returns: the absolute path of the checkout.
+    :rtype: str
     """
     dest = os.path.abspath(dest)
     if os.path.isdir(os.path.join(dest, ".git")):
@@ -140,28 +149,30 @@ def clone(uri, dest, branch="master"):
         return dest
     parent = os.path.dirname(dest) or "."
     os.makedirs(parent, exist_ok=True)
-    cmd = "git clone --branch %s %s %s" % (
-        shlex.quote(branch),
-        shlex.quote(uri),
-        shlex.quote(dest),
+    cmd = (
+        f"git clone --branch {shlex.quote(branch)} {shlex.quote(uri)} "
+        f"{shlex.quote(dest)}"
     )
     _run(cmd, parent, timeout=_INSTALL_TIMEOUT)
     return dest
 
 
 def install(lkp_dir, sudo=True, extra=None):
-    """
-    Build the lkp-tests subsystem and run the base ``bin/lkp install``.
+    """Build the lkp-tests subsystem and run the base ``bin/lkp install``.
 
     The build and install steps may prompt (package managers, account
     creation), so ``yes`` is piped only into those steps. The per-step
     timeout is the module-level :data:`_INSTALL_TIMEOUT`.
 
     :param lkp_dir: path to the lkp-tests checkout.
+    :type lkp_dir: str
     :param sudo: run the install steps with elevated privileges.
+    :type sudo: bool
     :param extra: extra arguments appended to ``bin/lkp install`` (e.g.
                   ``"--skip-base"``). Applies to this base install only.
+    :type extra: str or None
     :returns: the absolute path of the ``bin/lkp`` executable.
+    :rtype: str
     """
     lkp_dir = os.path.abspath(lkp_dir)
     _make_installer_tolerant(lkp_dir)
@@ -184,7 +195,7 @@ def install(lkp_dir, sudo=True, extra=None):
     )
 
     lkp_bin = os.path.join(lkp_dir, "bin", "lkp")
-    cmd = "%s install" % shlex.quote(lkp_bin)
+    cmd = f"{shlex.quote(lkp_bin)} install"
     if extra:
         cmd += " " + extra
     _run(
@@ -199,8 +210,7 @@ def install(lkp_dir, sudo=True, extra=None):
 
 
 def install_job(lkp_dir, job_yaml, testbox, sudo=True):
-    """
-    Split a job YAML into concrete sub-jobs and install their dependencies.
+    """Split a job YAML into concrete sub-jobs and install their dependencies.
 
     A minimal ``hosts/<testbox>`` description is created if missing, then
     ``lkp split-job`` is run (no auto-answer) and its ``=> ./<name>.yaml``
@@ -210,25 +220,29 @@ def install_job(lkp_dir, job_yaml, testbox, sudo=True):
     module-level :data:`_INSTALL_TIMEOUT`.
 
     :param lkp_dir: path to the lkp-tests checkout.
+    :type lkp_dir: str
     :param job_yaml: path to the staged job YAML to split.
+    :type job_yaml: str
     :param testbox: testbox name used by ``lkp split-job -t``.
+    :type testbox: str
     :param sudo: run the per-sub-job dependency install with elevated
                  privileges (package installation usually needs root).
+    :type sudo: bool
     :returns: list of absolute paths to the generated sub-job YAML files.
+    :rtype: list
     :raises RuntimeError: if ``lkp split-job`` produces no sub-jobs.
     """
     lkp_dir = os.path.abspath(lkp_dir)
     lkp_bin = os.path.join(lkp_dir, "bin", "lkp")
     _ensure_testbox(lkp_dir, testbox)
 
-    cmd = "%s split-job -t %s %s" % (
-        shlex.quote(lkp_bin),
-        shlex.quote(testbox),
-        shlex.quote(job_yaml),
+    cmd = (
+        f"{shlex.quote(lkp_bin)} split-job -t {shlex.quote(testbox)} "
+        f"{shlex.quote(job_yaml)}"
     )
     result = _run(cmd, lkp_dir, timeout=_INSTALL_TIMEOUT)
 
-    output = "%s\n%s" % (result.stdout_text or "", result.stderr_text or "")
+    output = f"{result.stdout_text or ''}\n{result.stderr_text or ''}"
     subs = []
     for line in output.splitlines():
         match = _SPLIT_RE.search(line)
@@ -238,10 +252,10 @@ def install_job(lkp_dir, job_yaml, testbox, sudo=True):
         if os.path.isfile(path):
             subs.append(os.path.abspath(path))
     if not subs:
-        raise RuntimeError("lkp split-job produced no sub-jobs for %s" % job_yaml)
+        raise RuntimeError(f"lkp split-job produced no sub-jobs for {job_yaml}")
 
     for sub in subs:
-        cmd = "%s install %s" % (shlex.quote(lkp_bin), shlex.quote(sub))
+        cmd = f"{shlex.quote(lkp_bin)} install {shlex.quote(sub)}"
         _run(
             cmd,
             lkp_dir,
@@ -254,8 +268,7 @@ def install_job(lkp_dir, job_yaml, testbox, sudo=True):
 
 
 def run_job(lkp_dir, sub_job, timeout=3600):
-    """
-    Run a single lkp-tests sub-job locally.
+    """Run a single lkp-tests sub-job locally.
 
     The benchmark must never receive an interactive ``yes`` stream, so this
     step is run without auto-answer. ``ignore_status`` is set so the caller
@@ -263,11 +276,15 @@ def run_job(lkp_dir, sub_job, timeout=3600):
     returns non-zero (a finished non-zero run is detectable, not a hang).
 
     :param lkp_dir: path to the lkp-tests checkout.
+    :type lkp_dir: str
     :param sub_job: path to a concrete sub-job YAML produced by
                     :func:`install_job`.
+    :type sub_job: str
     :param timeout: timeout in seconds. Must be larger than the benchmark's
                     own runtime (``testtime``) so the run is not killed early.
+    :type timeout: int
     :returns: the :class:`process.CmdResult` of the run.
+    :rtype: process.CmdResult
     """
     lkp_dir = os.path.abspath(lkp_dir)
     lkp_bin = os.path.join(lkp_dir, "bin", "lkp")
@@ -277,17 +294,19 @@ def run_job(lkp_dir, sub_job, timeout=3600):
         "BENCHMARK_ROOT": os.path.join(lkp_dir, "benchmarks"),
         "LKP_LOCAL_RUN": "1",
     }
-    cmd = "%s run %s" % (shlex.quote(lkp_bin), shlex.quote(sub_job))
+    cmd = f"{shlex.quote(lkp_bin)} run {shlex.quote(sub_job)}"
     return _run(cmd, lkp_dir, ignore_status=True, timeout=timeout, env=run_env)
 
 
 def find_result_file(root, name):
-    """
-    Return the newest ``name`` found recursively under ``root``.
+    """Return the newest ``name`` found recursively under ``root``.
 
     :param root: directory to search under (typically the lkp-tests checkout).
+    :type root: str
     :param name: result file name to look for, e.g. ``"mpstat.json"``.
+    :type name: str
     :returns: the absolute path of the newest match, or ``None`` if not found.
+    :rtype: str or None
     """
     if not root or not os.path.isdir(root):
         return None
@@ -307,19 +326,22 @@ def find_result_file(root, name):
 
 
 def archive_results(lkp_dir, result_name, dest):
-    """
-    Copy the lkp result directory containing ``result_name`` into ``dest``.
+    """Copy the lkp result directory containing ``result_name`` into ``dest``.
 
     The lkp checkout usually lives under a test's working directory, which the
     framework removes once the test finishes; copying the result directory to a
     persistent location keeps the artifacts available after the run.
 
     :param lkp_dir: path to the lkp-tests checkout to search for results.
+    :type lkp_dir: str
     :param result_name: result file name used to locate the result directory,
                         e.g. ``"mpstat.json"`` or ``"stats.json"``.
+    :type result_name: str
     :param dest: destination directory; replaced if it already exists.
+    :type dest: str
     :returns: the destination path on success, or ``None`` when no result file
               was found or the copy failed.
+    :rtype: str or None
     """
     result_file = find_result_file(lkp_dir, result_name)
     if not result_file:

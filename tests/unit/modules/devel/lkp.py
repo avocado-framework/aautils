@@ -35,7 +35,9 @@ class InstallTest(unittest.TestCase):
     @mock.patch("os.chmod")
     @mock.patch("builtins.open", new_callable=mock.mock_open)
     @mock.patch("os.path.isfile")
-    def test_install_runs_build_and_install_steps(self, isfile, mock_open, chmod, run):
+    def test_install_runs_build_and_install_steps(
+        self, isfile, _mock_open, _chmod, run
+    ):
         """install() makes the installer tolerant, then builds and installs."""
         isfile.return_value = True
 
@@ -60,7 +62,7 @@ class InstallJobTest(unittest.TestCase):
     @mock.patch("os.makedirs")
     @mock.patch("builtins.open", new_callable=mock.mock_open)
     def test_install_job_splits_and_installs_subjobs(
-        self, mock_open, makedirs, isfile, run
+        self, _mock_open, _makedirs, isfile, run
     ):
         """Sub-jobs parsed from split-job output are individually installed."""
         isfile.return_value = True
@@ -147,7 +149,7 @@ class ArchiveResultsTest(unittest.TestCase):
     @mock.patch("autils.devel.lkp.find_result_file")
     def test_archives_into_fresh_destination(
         self, find_result_file, isdir, exists, islink, copytree
-    ):
+    ):  # pylint: disable=too-many-arguments
         """The directory containing the newest result file is copied to dest."""
         find_result_file.return_value = "/tmp/lkp-tests/results/x/mpstat.json"
         isdir.return_value = False
