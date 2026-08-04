@@ -5,6 +5,10 @@ Ar
 --
 .. automodule:: autils.archive.ar
 
+Archive
+-------
+.. automodule:: autils.archive.archive
+
 Data Structures
 ===============
 .. automodule:: autils.data_structures

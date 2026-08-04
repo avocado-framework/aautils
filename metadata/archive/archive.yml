@@ -1,0 +1,16 @@
+name: archive
+description: Module to help extract and create compressed archives
+categories:
+  - OS
+  - Files
+maintainers:
+  - name: wangpeng
+    email: wangpengb@uniontech.com
+    github_usr_name: wangp-h
+supported_platforms:
+  - CentOS Stream 9
+  - Fedora 36
+  - Fedora 37
+tests:
+  - tests/unit/modules/archive/archive.py
+remote: false
