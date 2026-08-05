@@ -81,7 +81,10 @@ disable=line-too-long,
   protected-access,
   too-many-lines,
   no-self-use,
-  no-member
+  no-member,
+  consider-using-with,
+  too-many-locals,
+  use-implicit-booleaness-not-comparison-to-zero
 
 
 [REPORTS]
