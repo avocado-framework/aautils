@@ -1,0 +1,15 @@
+name: lkp
+description: Framework-independent helpers to clone, install and run Intel LKP (lkp-tests) microbenchmarks locally
+categories:
+  - Development
+maintainers:
+  - name: Sumit Kumar
+    email: sumitkum@amd.com
+    github_usr_name: Sumitupadhyay1
+supported_platforms:
+  - CentOS Stream 9
+  - Fedora 36
+  - Fedora 37
+tests:
+  - tests/unit/modules/devel/lkp.py
+remote: false
