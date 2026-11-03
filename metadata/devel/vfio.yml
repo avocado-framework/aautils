@@ -1,0 +1,14 @@
+name: vfio
+description: APIs for virtual function I/O management
+categories:
+  - Development
+maintainers:
+  - name: Dheeraj Kumar Srivastava
+    email: dheerajkumar.srivastava@amd.com
+supported_platforms:
+  - CentOS Stream 9
+  - Fedora 36
+  - Fedora 37
+tests:
+  - tests/unit/modules/devel/vfio.py
+remote: false

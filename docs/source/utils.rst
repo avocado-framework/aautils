@@ -70,6 +70,10 @@ Script
 ------
 .. automodule:: autils.devel.script
 
+Vfio
+---
+.. automodule:: autils.devel.vfio
+
 Wait
 ----
 .. automodule:: autils.devel.wait
